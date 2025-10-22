@@ -6,8 +6,10 @@ import {
   Text,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import MapView, {Polygon, Marker} from 'react-native-maps';
+import Geolocation from 'react-native-geolocation-service';
 import {sendGeofenceData} from '../services/api';
 
 interface Coordinate {
@@ -19,6 +21,7 @@ export const GeofenceMap: React.FC = () => {
   const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [userLocation, setUserLocation] = useState<Coordinate | null>(null);
   const [region, setRegion] = useState({
     latitude: 59.9139,
     longitude: 10.7522,
@@ -99,6 +102,53 @@ export const GeofenceMap: React.FC = () => {
     setRegion(newRegion);
   };
 
+  const goToMyLocation = async () => {
+    try {
+      // Request permission first
+      const hasPermission = await Geolocation.requestAuthorization('whenInUse');
+      
+      if (hasPermission !== 'granted') {
+        Alert.alert(
+          'Permission Denied',
+          'Location permission is required to use this feature. Please enable it in Settings.',
+        );
+        return;
+      }
+
+      Geolocation.getCurrentPosition(
+        position => {
+          const {latitude, longitude} = position.coords;
+          const newLocation = {latitude, longitude};
+          setUserLocation(newLocation);
+          
+          const newRegion = {
+            latitude,
+            longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          };
+          setRegion(newRegion);
+          mapRef.current?.animateToRegion(newRegion, 500);
+        },
+        error => {
+          Alert.alert(
+            'Location Error',
+            `Unable to get your location: ${error.message}`,
+          );
+          console.error(error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 10000,
+        },
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to request location permission');
+      console.error(error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <MapView
@@ -112,6 +162,13 @@ export const GeofenceMap: React.FC = () => {
         pitchEnabled={false}
         rotateEnabled={false}
         onPress={handleMapPress}>
+        {userLocation && (
+          <Marker
+            coordinate={userLocation}
+            pinColor="blue"
+            title="Your Location"
+          />
+        )}
         {coordinates.length > 0 && (
           <>
             {coordinates.map((coord, index) => (
@@ -139,6 +196,9 @@ export const GeofenceMap: React.FC = () => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
           <Text style={styles.zoomButtonText}>−</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.zoomButton} onPress={goToMyLocation}>
+          <Text style={styles.zoomButtonText}>📍</Text>
         </TouchableOpacity>
       </View>
 
