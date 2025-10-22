@@ -19,6 +19,12 @@ export const GeofenceMap: React.FC = () => {
   const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [region, setRegion] = useState({
+    latitude: 59.9139,
+    longitude: 10.7522,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
   const mapRef = useRef<MapView>(null);
 
   const handleMapPress = (event: any) => {
@@ -69,17 +75,42 @@ export const GeofenceMap: React.FC = () => {
     }
   };
 
+  const zoomIn = () => {
+    const newRegion = {
+      ...region,
+      latitudeDelta: region.latitudeDelta / 2,
+      longitudeDelta: region.longitudeDelta / 2,
+    };
+    setRegion(newRegion);
+    mapRef.current?.animateToRegion(newRegion, 300);
+  };
+
+  const zoomOut = () => {
+    const newRegion = {
+      ...region,
+      latitudeDelta: region.latitudeDelta * 2,
+      longitudeDelta: region.longitudeDelta * 2,
+    };
+    setRegion(newRegion);
+    mapRef.current?.animateToRegion(newRegion, 300);
+  };
+
+  const onRegionChangeComplete = (newRegion: typeof region) => {
+    setRegion(newRegion);
+  };
+
   return (
     <View style={styles.container}>
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={{
-          latitude: 59.9139,
-          longitude: 10.7522,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
+        region={region}
+        onRegionChangeComplete={onRegionChangeComplete}
+        zoomEnabled={true}
+        zoomControlEnabled={true}
+        scrollEnabled={true}
+        pitchEnabled={false}
+        rotateEnabled={false}
         onPress={handleMapPress}>
         {coordinates.length > 0 && (
           <>
@@ -101,6 +132,15 @@ export const GeofenceMap: React.FC = () => {
           </>
         )}
       </MapView>
+
+      <View style={styles.zoomControls}>
+        <TouchableOpacity style={styles.zoomButton} onPress={zoomIn}>
+          <Text style={styles.zoomButtonText}>+</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
+          <Text style={styles.zoomButtonText}>−</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.controls}>
         <View style={styles.buttonRow}>
@@ -157,6 +197,30 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  zoomControls: {
+    position: 'absolute',
+    right: 20,
+    top: 100,
+    gap: 10,
+  },
+  zoomButton: {
+    backgroundColor: '#fff',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  zoomButtonText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#007AFF',
   },
   controls: {
     position: 'absolute',
