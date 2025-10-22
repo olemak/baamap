@@ -4,11 +4,14 @@ A React Native application that allows users to draw geofences on a map and send
 
 ## Features
 
-- 📍 Interactive map interface
-- ✏️ Draw custom geofence polygons by tapping on the map
-- 📤 Send geofence data to backend server
-- 🗺️ Visual feedback with markers and polygon overlay
-- ⚡ Real-time coordinate tracking
+- Interactive map interface with pinch-to-zoom and pan gestures
+- "My Location" button to center map on current position
+- Zoom controls (+ / − buttons and pinch gestures)
+- Draw custom geofence polygons by tapping on the map
+- Send geofence data to backend server
+- Visual feedback with markers and polygon overlay
+- Real-time coordinate tracking
+- Info screen with app description and navigation
 
 ## Project Structure
 
@@ -17,13 +20,18 @@ baamap/
 ├── src/
 │   ├── components/
 │   │   └── GeofenceMap.tsx    # Main map component with drawing logic
+│   ├── screens/
+│   │   ├── InfoScreen.tsx     # Landing page with app info
+│   │   └── MapScreen.tsx      # Map screen wrapper
 │   ├── services/
 │   │   └── api.ts              # API service for server communication
+│   ├── types/
+│   │   └── navigation.ts       # Navigation type definitions
 │   └── config.ts               # Configuration (API URL)
 ├── server/
 │   ├── index.js                # Express server
 │   └── package.json            # Server dependencies
-├── App.tsx                     # Main app entry point
+├── App.tsx                     # Main app entry point with navigation
 └── package.json                # React Native dependencies
 ```
 
@@ -85,12 +93,15 @@ npx react-native run-android
 
 ## Usage
 
-1. Tap **"Start Drawing"** to begin creating a geofence
-2. Tap on the map to add points (minimum 3 points required)
-3. Tap **"Finish"** when done drawing
-4. The polygon will appear on the map
-5. Tap **"Send to Server"** to transmit the coordinates
-6. The server will respond with a confirmation and geofence ID
+1. On the **Info screen**, tap **"Open Map"** to access the map
+2. Use the **📍 button** to center the map on your current location
+3. Use **+ / − buttons** or **pinch gestures** to zoom in/out
+4. Tap **"Start Drawing"** to begin creating a geofence
+5. Tap on the map to add points (minimum 3 points required)
+6. Tap **"Finish"** when done drawing
+7. The polygon will appear on the map with markers
+8. Tap **"Send to Server"** to transmit the coordinates
+9. The server will respond with a confirmation and geofence ID
 
 ## API Endpoints
 
@@ -135,17 +146,16 @@ Health check endpoint
 
 ### iOS
 
-Add to `ios/Podfile`:
-```ruby
-permissions_path = File.join(File.dirname(`node --print "require.resolve('react-native-permissions/package.json')"`), 'ios')
-pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
-```
-
-Add to `Info.plist`:
+Location permissions are already configured in `ios/BaamapApp/Info.plist`:
 ```xml
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>We need your location to display it on the map</string>
+<string>Baamap needs your location to center the map and create geofences around your position.</string>
 ```
+
+To test location in the iOS Simulator:
+1. Go to **Features → Location** in the simulator menu
+2. Choose a preset location (e.g., "Apple", "City Run") or **Custom Location...**
+3. Tap the 📍 button in the app to center on that location
 
 ### Android
 
@@ -174,6 +184,18 @@ Add to `android/app/src/main/AndroidManifest.xml`:
 ```bash
 npx tsc --noEmit
 ```
+
+## Future Features
+
+See [GitHub Issues](https://github.com/olemak/baamap/issues) for planned enhancements:
+
+- Name geofences before sending
+- Support multiple geofences simultaneously
+- List view of all geofences
+- Customizable geofence colors
+- Undo last point while drawing
+- Local persistence of geofences
+- Time-based morphing geofences (shape/location changes over time)
 
 ## License
 
