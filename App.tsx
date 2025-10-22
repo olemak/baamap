@@ -1,38 +1,22 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * Baamap - Geofencing App
+ * Draw geofences on a map and send them to a server
  *
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import {StatusBar, StyleSheet, View} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {GeofenceMap} from './src/components/GeofenceMap';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.container}>
+        <GeofenceMap />
+      </View>
     </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
   );
 }
 
